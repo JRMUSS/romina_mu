@@ -61,17 +61,25 @@ def eliminar_catalogo():
 # --- Interfaz gráfica ---
 root = Tk()
 root.title("Catálogo de Películas")
+root.geometry("500x400")  # tamaño de ventana
+root.configure(bg="#2C3E50")  # color de fondo
 
-Label(root, text="Nombre de la película:").pack(pady=5)
-entry_nombre = Entry(root, width=50)
+# Estilos de texto
+font_label = ("Helvetica", 12, "bold")
+font_entry = ("Helvetica", 12)
+font_button = ("Helvetica", 11, "bold")
+font_listbox = ("Helvetica", 12)
+
+Label(root, text="Nombre de la película:", bg="#2C3E50", fg="white", font=font_label).pack(pady=10)
+entry_nombre = Entry(root, width=40, font=font_entry)
 entry_nombre.pack(pady=5)
 
-Button(root, text="Agregar Película", command=agregar_pelicula).pack(pady=5)
-Button(root, text="Actualizar Lista", command=actualizar_lista).pack(pady=5)
-Button(root, text="Eliminar Catálogo", command=eliminar_catalogo).pack(pady=5)
+Button(root, text="Agregar Película", command=agregar_pelicula, bg="#27AE60", fg="white", font=font_button).pack(pady=5)
+Button(root, text="Actualizar Lista", command=actualizar_lista, bg="#2980B9", fg="white", font=font_button).pack(pady=5)
+Button(root, text="Eliminar Catálogo", command=eliminar_catalogo, bg="#C0392B", fg="white", font=font_button).pack(pady=5)
 
-lista_peliculas = Listbox(root, width=50)
-lista_peliculas.pack(pady=10)
+lista_peliculas = Listbox(root, width=50, height=10, font=font_listbox)
+lista_peliculas.pack(pady=15)
 actualizar_lista()
 
 root.mainloop()
