@@ -1,110 +1,77 @@
-import os
-import tkinter as tk
+from tkinter import *
 from tkinter import messagebox
+import os
 
+# --- Clase Pelicula ---
 class Pelicula:
-    def __init__(self, titulo):
-        titulo_limpio = titulo.strip()
-        if not titulo_limpio:
-            raise ValueError("El título de la película no puede estar vacío.")
-        self.__titulo = titulo_limpio
-
-    @property
-    def titulo(self):
-        return self.__titulo
-
-    def __str__(self):
-        return self.__titulo
-
-class CatalogoPelicula:
     def __init__(self, nombre):
-        nombre_limpio = nombre.strip()
-        if not nombre_limpio:
-            raise ValueError("El nombre del catálogo no puede estar vacío.")
-        self.nombre = nombre_limpio
-        self.ruta_archivo = self.nombre + ".txt"
-        try:
-            open(self.ruta_archivo, "x", encoding="utf-8").close()
-        except FileExistsError:
-            pass
+        self.__nombre = nombre  # atributo privado
+
+    def get_nombre(self):
+        return self.__nombre
+
+# --- Clase CatalogoPelicula ---
+class CatalogoPelicula:
+    def __init__(self, nombre_catalogo):
+        self.nombre = nombre_catalogo
+        self.ruta_archivo = f"{nombre_catalogo}.txt"
 
     def agregar(self, pelicula):
-        with open(self.ruta_archivo, "a", encoding="utf-8") as f:
-            f.write(pelicula.titulo + "\n")
+        with open(self.ruta_archivo, "a", encoding="utf-8") as archivo:
+            archivo.write(pelicula.get_nombre() + "\n")
+        messagebox.showinfo("Éxito", f"'{pelicula.get_nombre()}' agregada al catálogo.")
 
     def listar(self):
         try:
-            with open(self.ruta_archivo, "r", encoding="utf-8") as f:
-                return [linea.strip() for linea in f if linea.strip()]
+            with open(self.ruta_archivo, "r", encoding="utf-8") as archivo:
+                return [linea.strip() for linea in archivo]
         except FileNotFoundError:
             return []
 
     def eliminar(self):
         if os.path.exists(self.ruta_archivo):
             os.remove(self.ruta_archivo)
-            return True
-        return False
-
-# Interfaz gráfica mejorada
-class InterfazCatalogo:
-    def __init__(self, catalogo):
-        self.catalogo = catalogo
-        self.ventana = tk.Tk()
-        self.ventana.title("Catálogo de Películas")
-
-        tk.Label(self.ventana, text="Gestor de Catálogo de Películas", font=("Arial", 14, "bold")).pack(pady=10)
-
-        self.entry_pelicula = tk.Entry(self.ventana, width=40)
-        self.entry_pelicula.pack(pady=5)
-
-        tk.Button(self.ventana, text="Agregar Película", width=30, command=self.agregar_pelicula).pack(pady=5)
-        tk.Button(self.ventana, text="Eliminar Catálogo", width=30, command=self.eliminar_catalogo).pack(pady=5)
-        tk.Button(self.ventana, text="Salir", width=30, command=self.ventana.destroy).pack(pady=5)
-
-        self.listbox = tk.Listbox(self.ventana, width=50)
-        self.listbox.pack(pady=10)
-        self.actualizar_lista()
-
-        self.ventana.mainloop()
-
-    def agregar_pelicula(self):
-        titulo = self.entry_pelicula.get().strip()
-        if titulo:
-            try:
-                pelicula = Pelicula(titulo)
-                self.catalogo.agregar(pelicula)
-                self.entry_pelicula.delete(0, tk.END)
-                self.actualizar_lista()
-                messagebox.showinfo("Éxito", f"Película '{pelicula.titulo}' agregada.")
-            except ValueError as e:
-                messagebox.showerror("Error", str(e))
-
-    def actualizar_lista(self):
-        self.listbox.delete(0, tk.END)
-        for p in self.catalogo.listar():
-            self.listbox.insert(tk.END, p)
-
-    def eliminar_catalogo(self):
-        if self.catalogo.eliminar():
-            self.actualizar_lista()
-            messagebox.showinfo("Éxito", "Catálogo eliminado correctamente.✅")
+            messagebox.showinfo("Éxito", f"Catálogo '{self.nombre}' eliminado.")
         else:
-            messagebox.showwarning("Aviso", "No existe un catálogo para eliminar.⚠️")
+            messagebox.showwarning("Advertencia", "No existe el catálogo para eliminar.")
 
-# Programa principal
-def main():
-    nombre_catalogo = input("Ingresa el nombre del catálogo de películas 🎞️: ").strip()
-    try:
-        catalogo = CatalogoPelicula(nombre_catalogo)
-    except ValueError as e:
-        print(f"Error: {e}")
+# --- Crear catálogo ---
+catalogo = CatalogoPelicula("peliculas")  # <- instancia del catálogo
+
+# --- Funciones de la interfaz ---
+def agregar_pelicula():
+    nombre = entry_nombre.get().strip()
+    if nombre == "":
+        messagebox.showwarning("Error", "Debe ingresar un nombre de película")
         return
+    pelicula = Pelicula(nombre)
+    catalogo.agregar(pelicula)
+    actualizar_lista()
+    entry_nombre.delete(0, END)
 
-    modo = input("¿Quieres usar la versión gráfica (g)🕹️ o consola (c)✨? ").strip().lower()
-    if modo == "g":
-        InterfazCatalogo(catalogo)
-    else:
-        print("Modo consola aún disponible en el código original.")
+def actualizar_lista():
+    lista_peliculas.delete(0, END)
+    for p in catalogo.listar():
+        lista_peliculas.insert(END, p)
 
-if __name__ == "__main__":
-    main()
+def eliminar_catalogo():
+    catalogo.eliminar()
+    actualizar_lista()
+
+# --- Interfaz gráfica ---
+root = Tk()
+root.title("Catálogo de Películas")
+
+Label(root, text="Nombre de la película:").pack(pady=5)
+entry_nombre = Entry(root, width=50)
+entry_nombre.pack(pady=5)
+
+Button(root, text="Agregar Película", command=agregar_pelicula).pack(pady=5)
+Button(root, text="Actualizar Lista", command=actualizar_lista).pack(pady=5)
+Button(root, text="Eliminar Catálogo", command=eliminar_catalogo).pack(pady=5)
+
+lista_peliculas = Listbox(root, width=50)
+lista_peliculas.pack(pady=10)
+actualizar_lista()
+
+root.mainloop()
